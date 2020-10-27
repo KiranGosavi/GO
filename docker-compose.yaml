@@ -1,0 +1,20 @@
+version: '3.8'
+services:
+  mysql:
+    image: mysql:latest
+    ports:
+     - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: root123
+    volumes:
+      - ./initschema:/docker-entrypoint-initdb.d
+
+  myservice:
+    build: .
+    ports:
+     - "5000:5000"
+    depends_on:
+      - mysql
+    command: /bin/bash -c "sleep 30 && /app/mywebservice"
+
+
