@@ -3,6 +3,7 @@ package product
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/KiranGosavi/webservice/cors"
 	"log"
 	"net/http"
 	"strconv"
@@ -20,8 +21,8 @@ func SetupRoutes(apiBasePath string) {
 	handleProducts := http.HandlerFunc(productHandler)
 	handleProduct := http.HandlerFunc(productHandlerSingle)
 	http.Handle("/websocket", websocket.Handler(productSocket))
-	http.Handle(fmt.Sprintf("%s/%s", apiBasePath, productsBasePath), handleProducts)
-	http.Handle(fmt.Sprintf("%s/%s/", apiBasePath, productsBasePath), handleProduct)
+	http.Handle(fmt.Sprintf("%s/%s", apiBasePath, productsBasePath),cors.MiddlewareHandler(handleProducts))
+	http.Handle(fmt.Sprintf("%s/%s/", apiBasePath, productsBasePath), cors.MiddlewareHandler(handleProduct))
 }
 
 func productHandlerSingle(w http.ResponseWriter, r *http.Request) {
@@ -45,8 +46,11 @@ func productHandlerSingle(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
-		w.Header().Set("Content-Type", "application/json")
-		w.Write(productJSON)
+		//w.Header().Set("Content-Type", "application/json")
+		_,err = w.Write(productJSON)
+		if err != nil {
+			log.Fatal(err)
+		}
 	case http.MethodPut:
 		//update product in the list
 		var product Product
@@ -55,11 +59,6 @@ func productHandlerSingle(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
-		if product.ProductID != productID {
-			w.WriteHeader(http.StatusBadRequest)
-			return
-		}
-
 		err = updateProduct(product)
 		if err != nil {
 			log.Print(err)

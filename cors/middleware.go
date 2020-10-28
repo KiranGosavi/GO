@@ -3,8 +3,8 @@ package cors
 import (
 	"net/http"
 )
-
-func middlewareHandler(handler http.Handler) http.Handler {
+//MiddlewareHandler to handlle the
+func MiddlewareHandler(handler http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Add("Access-Control-Allow-Origin", "*")
 		w.Header().Add("Content-Type", "application/json")
